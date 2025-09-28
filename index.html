@@ -11,12 +11,11 @@
         <div class="model-container">
             <canvas id="live2d-canvas"></canvas>
         </div>
-
         <div class="chat-container">
-            <div id="chat-log" class="chat-log">
-                </div>
+            <div id="chat-log" class="chat-log"></div>
             <form id="chat-form" class="chat-form">
                 <input type="text" id="user-input" placeholder="ここにメッセージを入力..." autocomplete="off">
+                <button type="button" id="mic-button">🎤</button>
                 <button type="submit" id="send-button">送信</button>
             </form>
         </div>
@@ -25,7 +24,7 @@
     <script src="./lib/pixi.min.js"></script>
     <script src="./lib/live2dcubismcore.min.js"></script>
     <script src="./lib/cubism4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/live2d-cubism-pixi-renderer@1.1.2/dist/index.min.js"></script>
+    <script src="./lib/live2d-cubism-pixi-renderer.min.js"></script>
     
     <script src="script.js"></script>
 </body>
