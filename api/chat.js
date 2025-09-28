@@ -1,4 +1,8 @@
-export default async function handler(request, response) {
+// api/chat.js
+
+// Vercelがこのファイルを見つけると、自動的に安全なAPIエンドポイントを作成してくれます。
+// 外部ライブラリは不要です。
+module.exports = async (request, response) => {
   // POST以外のリクエストは拒否
   if (request.method !== 'POST') {
     return response.status(405).json({ error: 'Method Not Allowed' });
@@ -19,7 +23,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    // ここでVercelサーバーがGroqに問い合わせる
+    // VercelサーバーがGroqに問い合わせる
     const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -36,9 +40,10 @@ export default async function handler(request, response) {
     });
 
     if (!groqResponse.ok) {
-      const errorData = await groqResponse.json();
-      console.error("Groq API Error:", errorData);
-      return response.status(groqResponse.status).json({ error: 'Failed to fetch response from Groq' });
+        const errorData = await groqResponse.json();
+        console.error("Groq API Error:", errorData);
+        // エラー内容をフロントに返す
+        return response.status(groqResponse.status).json({ error: 'AI APIからの応答に失敗しました。' });
     }
 
     const data = await groqResponse.json();
@@ -51,4 +56,4 @@ export default async function handler(request, response) {
     console.error("Internal Server Error:", error);
     response.status(500).json({ error: 'Internal Server Error' });
   }
-}
+};

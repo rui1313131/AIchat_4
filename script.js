@@ -1,109 +1,102 @@
+// script.js
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 各要素を取得
-    const canvas = document.getElementById('live2d-canvas');
-    const sendButton = document.getElementById('send-button');
-    const userInput = document.getElementById('user-input');
-    const chatHistory = document.getElementById('chat-history');
     
-    // Live2Dモデルのパス
-    const MODEL_PATH = './Mao/mao_pro.model3.json';
-    
-    // --- アプリケーションの初期化を開始 ---
-    async function initializeApp() {
-        const app = new PIXI.Application({
-            view: canvas,
-            autoStart: true,
-            resizeTo: canvas.parentElement,
-            backgroundColor: 0x333333,
-            transparent: true
-        });
-
-        async function loadLive2DModel() {
-            try {
-                const model = await PIXI.live2d.Live2DModel.from(MODEL_PATH);
-                app.stage.addChild(model);
-                const scale = canvas.parentElement.offsetHeight / model.height * 0.9;
-                model.scale.set(scale);
-                model.x = (canvas.parentElement.offsetWidth - model.width) / 2;
-                model.y = (canvas.parentElement.offsetHeight - model.height) / 2;
-                model.motion('Idle');
-                model.on('hit', (hitAreaNames) => {
-                    if (hitAreaNames.includes('Body')) {
-                        model.motion('TapBody', undefined, 3);
-                    }
-                });
-            } catch (error) {
-                console.error("Live2Dモデルの読み込みに失敗しました:", error);
-                alert(`Live2Dモデルの読み込みに失敗しました。\nエラー: ${error.message}`);
-            }
-        }
-
-        // Live2Dモデルを読み込む
-        loadLive2DModel();
-        
-        appendMessage("AIとのチャットを開始できます。", "ai");
+    // --- Live2Dモデルの初期化 ---
+    const canvas = document.getElementById("live2d-canvas");
+    if (!canvas) {
+        console.error("Canvas element not found!");
+        return;
     }
 
-    initializeApp();
-
-    // メッセージ送受信の処理
-    sendButton.addEventListener('click', handleSendMessage);
-    userInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') { handleSendMessage(); }
+    const app = new PIXI.Application({
+        view: canvas,
+        autoStart: true,
+        resizeTo: canvas.parentElement,
+        backgroundColor: 0x333333,
     });
 
-    async function handleSendMessage() {
+    // あなたのモデルへのパス (要確認・修正)
+    const MODEL_PATH = "Mao/mao_pro_en/mao_pro_en.model3.json"; 
+
+    PIXI.live2d.Live2DModel.from(MODEL_PATH).then(model => {
+        app.stage.addChild(model);
+        // モデルのサイズと位置を調整
+        const scale = canvas.parentElement.offsetHeight / model.height * 0.9;
+        model.scale.set(scale);
+        model.x = (canvas.parentElement.offsetWidth - model.width) / 2;
+        model.y = (canvas.parentElement.offsetHeight - model.height) / 2;
+    }).catch(err => {
+        console.error("Failed to load Live2D model:", err);
+    });
+
+
+    // --- チャット機能の初期化 ---
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const chatLog = document.getElementById('chat-log');
+
+    // チャット履歴にメッセージを追加する関数
+    function addMessage(role, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${role}`;
+        
+        const p = document.createElement('p');
+        p.textContent = content;
+        
+        messageDiv.appendChild(p);
+        chatLog.appendChild(messageDiv);
+        
+        // 自動で一番下までスクロール
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // 最初にAIからの挨拶を追加
+    addMessage('ai', 'こんにちは！メッセージをどうぞ。');
+
+    // フォームが送信されたときの処理
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); // ページの再読み込みを防ぐ
         const message = userInput.value.trim();
         if (!message) return;
 
-        // ユーザーのメッセージをUIに追加し、入力欄をクリア
-        appendMessage(message, 'user');
-        userInput.value = '';
-        sendButton.disabled = true; // 連打防止
+        // ユーザーのメッセージを表示
+        addMessage('user', message);
+        userInput.value = ''; // 入力欄をクリア
+
+        // ボタンを無効化してローディング状態にする
+        sendButton.disabled = true;
+        sendButton.textContent = '送信中...';
 
         try {
-            const aiResponse = await sendMessageToAI(message);
-            appendMessage(aiResponse, 'ai');
-        } catch (error) {
-            appendMessage('AIからの応答取得中にエラーが発生しました。', 'ai');
-        } finally {
-            sendButton.disabled = false; // 送信ボタンを再度有効化
-        }
-    }
-
-    // AIとの通信部分をVercelのバックエンドAPIを呼び出すように変更
-    async function sendMessageToAI(message) {
-        try {
-            // Vercelに作成したバックエンドAPIにリクエストを送る
-            const response = await fetch("/api/chat", {
-                method: "POST",
+            // VercelのサーバーレスAPI(/api/chat)にリクエストを送信
+            const response = await fetch('/api/chat', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json"
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: message // ユーザーのメッセージだけを送る
-                }),
+                body: JSON.stringify({ message: message }),
             });
+            
+            const data = await response.json();
 
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API Error:", errorData);
-                throw new Error(`API request failed with status ${response.status}`);
+                // APIからエラーが返ってきた場合
+                throw new Error(data.error || '不明なエラーが発生しました。');
             }
 
-            const data = await response.json();
-            return data.reply; // バックエンドからの返答を受け取る
-        } catch (error) {
-            console.error("sendMessageToAI Error:", error);
-            return "AIからの応答取得中にエラーが発生しました。";
-        }
-    }
+            // AIの返信を表示
+            addMessage('ai', data.reply);
 
-    function appendMessage(text, sender) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', sender);
-        messageElement.innerText = text;
-        chatHistory.appendChild(messageElement);
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    }
+        } catch (error) {
+            // 通信エラーなどが発生した場合
+            console.error('Fetch Error:', error);
+            addMessage('ai', `エラーが発生しました: ${error.message}`);
+        } finally {
+            // ボタンを再度有効化
+            sendButton.disabled = false;
+            sendButton.textContent = '送信';
+        }
+    });
 });
