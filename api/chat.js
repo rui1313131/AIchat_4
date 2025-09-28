@@ -11,7 +11,7 @@ module.exports = async (request, response) => {
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: [{ role: "user", content: message }],
-        model: "llama-3.1-70b-versatile", // ← 新しいモデル名に更新！
+        model: "llama-3.1-8b-instant", // ← 新しいモデル名に更新！
       }),
     });
     if (!groqResponse.ok) {
