@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIアバターチャット</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-wrapper">
+        <div id="avatar-container">
+            <canvas id="live2d-canvas"></canvas>
+        </div>
+        <div id="chat-container">
+            <div id="chat-history"></div>
+            <div id="chat-input-area">
+                <button id="login-button">Puterにログイン</button>
+                <input type="text" id="user-input" placeholder="ここにメッセージを入力..." disabled>
+                <button id="send-button" disabled>送信</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./lib/pixi.min.js"></script>
+    <script src="./lib/live2dcubismcore.min.js"></script>
+    <script src="./lib/cubism4.min.js"></script>
+    <script src="./lib/puter.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
