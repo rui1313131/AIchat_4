@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Live2Dモデルの初期化 ---
     const canvas = document.getElementById("live2d-canvas");
     if (!canvas) {
-        console.error("Canvas element not found!");
+        console.error("Canvas element #live2d-canvas not found!");
         return;
     }
 
@@ -28,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
         model.y = (canvas.parentElement.offsetHeight - model.height) / 2;
     }).catch(err => {
         console.error("Failed to load Live2D model:", err);
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "white";
+        ctx.font = "16px sans-serif";
+        ctx.fillText("モデルの読み込みに失敗しました。", 20, 40);
     });
 
 
