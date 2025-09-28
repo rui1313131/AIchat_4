@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // あなたのモデルへのパス (要確認・修正)
-    const MODEL_PATH = "Mao/mao_pro_en/mao_pro_en.model3.json"; 
+    const MODEL_PATH = "Mao/mao_pro_en/mao_pro.model3.json"; 
 
     PIXI.live2d.Live2DModel.from(MODEL_PATH).then(model => {
         app.stage.addChild(model);
