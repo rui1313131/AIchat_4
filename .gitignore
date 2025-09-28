@@ -1,1 +1,14 @@
-node_modules
+# Node.jsの依存関係フォルダ
+# これが最も重要です
+/node_modules
+
+# Vercelの設定フォルダ
+.vercel
+
+# APIキーなどの機密情報を含む環境変数ファイル
+.env
+.env*.local
+
+# macOS と Windows のシステムファイル
+.DS_Store
+Thumbs.db
